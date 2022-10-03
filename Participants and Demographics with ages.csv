@@ -1,0 +1,53 @@
+ID,Diagnosis,Diagnosis2,Era,Era2,Age,Male/Female,Overall Health_pre,QoL_pre,QoSL_pre,Overall Health_post,QoL_post,QoSL_post
+1,MH,Mental Health,Vietnam,Korea/Vietnam,71,M,4,4,4,4,5,5
+2,MH,Mental Health,Gulf,Gulf,51,M,3,3,2,4,4,5
+3,UE Amp,Amputation,Vietnam,Korea/Vietnam,71,M,5,5,5,5,5,5
+4,SCI,SCI,Viet,Korea/Vietnam,69,M,5,5,4,5,4,4
+5,MH,Mental Health,Persiun Gulf,Gulf,48,F,4,4,3,4,4,4
+6,MH,Mental Health,persian gulf,Gulf,56,M,3,3,3,4,4,5
+7,TBI,TBI,OEF,OEF/OIF,28,M,5,4,4,5,5,5
+8,VI,VI,Korean,Korea/Vietnam,87,M,5,5,5,5,5,5
+9,ortho,General Medical,Post Viet,Post-Vietnam,61,M,5,5,5,5,5,5
+10,MH,Mental Health,OEF,OEF/OIF,31,M,4,4,4,5,5,4
+11,mTBI,TBI,OEF,OEF/OIF,53,M,4,3,2,4,4,2
+12,VI,VI,Korea,Korea/Vietnam,81,M,5,5,5,5,5,5
+13,VI,VI,Vietnam,Korea/Vietnam,68,M,4,4,4,5,5,5
+14,MH,Mental Health,Viet,Korea/Vietnam,63,M,5,5,5,4,5,5
+15,NA,NA,OEF,OEF/OIF,29,M,4,4,4,5,5,5
+16,MH,Mental Health,Gulf War,Gulf,48,M,4,4,4,4,4,5
+17,PTSD,Mental Health,OEF,OEF/OIF,48,F,3,4,3,4,5,5
+18,PTSD,Mental Health,OEF,OEF/OIF,35,F,4,3,3,4,3,4
+19,MH,Mental Health,persian gulf,Gulf,57,M,3,4,4,4,4,4
+20,Amp,Amputation,Viet,Korea/Vietnam,74,M,5,5,5,5,5,5
+21,MH,Mental Health,OEF,OEF/OIF,42,F,4,5,5,4,4,5
+22,MH,Mental Health,Post Viet,Post-Vietnam,63,F,4,4,4,4,4,4
+23,Amp,Amputation,Korea,Korea/Vietnam,80,M,4,4,4,4,4,4
+24,MH,Mental Health,Viet,Korea/Vietnam,66,M,5,5,5,5,5,5
+25,WWP,General Medical,OEf,OEF/OIF,27,M,4,4,4,4,4,5
+26,MH,Mental Health,persian gulf,Gulf,59,M,4,3,4,4,4,4
+27,SCI,SCI,OEF,OEF/OIF,35,F,5,5,5,5,5,5
+28,MH,Mental Health,Viet,Korea/Vietnam,65,M,5,5,4,5,4,4
+29,Ortho,General Medical,OEF,OEF/OIF,49,M,4,3,4,4,4,3
+30,WWP,General Medical,OEF,OEF/OIF,57,F,4,3,3,4,4,4
+31,MH,Mental Health,OEF,OEF/OIF,54,F,5,5,5,5,5,5
+32,SCI,SCI,Viet,Korea/Vietnam,70,M,5,5,5,5,5,5
+33,WWP,General Medical,OEF,OEF/OIF,NA,M,4,4,4,4,4,4
+34,SCI,SCI,Gulf,Gulf,55,M,4,4,4,4,4,4
+35,TBI,TBI,Gulf,Gulf,54,M,4,4,2,4,4,2
+36,MH,Mental Health,Post Viet,Post-Vietnam,63,F,3,3,3,3,4,4
+37,VI,VI,Viet,Korea/Vietnam,65,M,5,5,5,5,5,4
+38,SCI,SCI,Post Viet,Post-Vietnam,60,M,4,4,3,4,3,3
+39,Amp,Amputation,Viet,Korea/Vietnam,72,M,5,5,4,5,5,4
+40,WWP,General Medical,OEF,OEF/OIF,NA,M,2,1,2,3,4,4
+41,Med,General Medical,Korea,Korea/Vietnam,85,M,4,5,5,5,5,5
+42,MH,Mental Health,OEF,OEF/OIF,54,M,4,5,5,5,5,5
+43,Amp,Amputation,Viet,Korea/Vietnam,72,M,5,5,5,5,5,5
+44,VI,VI,Post Viet,Post-Vietnam,65,M,3,2,2,4,4,5
+45,WWP,General Medical,OEF,OEF/OIF,NA,M,2,2,2,4,4,4
+46,PTSD,Mental Health,Viet,Korea/Vietnam,63,M,3,2,5,4,4,5
+47,SCI,SCI,Post Viet,Post-Vietnam,56,M,4,4,3,5,4,5
+48,SCI,SCI,Viet,Korea/Vietnam,65,M,4,4,4,4,4,4
+49,TBI,TBI,OEF,OEF/OIF,32,M,5,5,5,5,5,5
+50,MH,Mental Health,OEF,OEF/OIF,40,M,5,4,4,5,5,5
+51,TBI,TBI,OEF,OEF/OIF,53,M,3,3,2,3,3,2
+52,WWP,General Medical,OEF,OEF/OIF,42,F,3,4,3,3,5,4

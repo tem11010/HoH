@@ -1,0 +1,640 @@
+---
+title: "Report 1"
+author: "Tim Moore & Eric Barón"
+date: "`r Sys.Date()`"
+output:
+  rmdformats::downcute:
+    code_folding: hide
+    self_contained: true
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+library(knitr)
+library(rmdformats)
+
+## Global options
+options(max.print="1000")
+opts_chunk$set(echo=FALSE,
+	             cache=TRUE,
+               prompt=FALSE,
+               tidy=TRUE,
+               comment=NA,
+               message=FALSE,
+               warning=FALSE)
+opts_knit$set(width=80)
+```
+
+```{r}
+
+library(BSDA)
+library(PairedData)
+library(lawstat)
+library(ggpubr)
+library(ggplot2)
+library(dplyr)
+library(psych)
+library(DescTools)
+library(coin)
+library(tidyr)
+
+
+```
+
+```{r}
+dat <- read.csv("Participants and Demographics with ages.csv", na.strings = "NA")[1:52,]
+
+```
+
+# Outline
+
+The goal is to evaluate quality of life (QoL) responses of veterans participating in a 'Heroes on the Hudson' event. Three QoL questions are asked, all three with 5-item Likert-type responses. The main research questions are:
+
+1. Is there a change in QoL after participating in the event?
+
+2. Are there differences in QoL between groups (Service Era, Diagnosis, Sex and Age) ? 
+
+The current approach has seen analysis conducted separately for each question, by using Wilcoxon Signed Rank test for paired data for the first question, and chi-squared test on the change scores to compare different groups (Service Era, Diagnosis, Sex and Age). 
+
+There are some challenges with this approach: 
+
+1. We cannot measure the reliability and validity of individual QoL items.
+2. Using Wilcoxon Signed rank tests on single-item, likert-type responses may be underpowered, while also forcing there to be equivalence in differences between values on the scale (e.g., 1 to 2 = 3 to 4).
+
+One possible solution would be to make a composite QoL scale, based on combining the three separate QoL questions. This could then be used to evaluate reliability and validity, and for the pre-post comparison, using a paired t-test (a more powerful test). The individual items could also be compared as additional evidence of changes pre-post.
+
+## Note on Demographics
+
+Demographic variables were recoded for analyses:
+
+```{r}
+
+library(table1)
+#names(dat)
+dat$Diagnosis<- dat$Diagnosis2
+dat$Era<- dat$Era2
+dat$Gender <-dat$Male.Female
+table1(~Diagnosis+ Era+Gender+
+          Age, 
+        #labels = labels, 
+        data = dat)
+
+```
+
+# Statistical Methods
+
+To evaluate the impact of the event on participant QoL, we performed statistical analyses in two ways. First, we calculated a sum score of the three QoL questions, and tested for a difference in pre-post scores using a paired-sample T-test. We also, compared pre-post scores for individuals questions, using Wilcoxon signed rank tests. Prior to evaluating the change in sum scores, we performed a one-factor Confirmatory Factor Analysis CFA to test its validity and reliability. 
+
+In order to evaluate which participants characteristics correlated with QoL, we used an Analysis of covariance model to predict participants post-participation QoL sum score. The model included the following predictors: Diagnosis, Era, Age, Gender, and pre-participation QoL score. This model is similar to a model on the difference between pre- and post-participation scores, but allows for more flexibility in the relationship between them, and may be more effective (O'Connell et al, 2017). As a sensitivity, we also fitted ANCOVA models on each individual QoL item. 
+
+All statistical tests were performed in R 4.1.0 (R Core Team, 2021). Single-factor CFA was performed using the cfa function in lavaan (v 0.6-12, Rosseel, 2012). Reliability and validity metrics calculated using the semTools (v 0.5-6, Jorgensen et al, 2022) functions compRelSEM (calculates a value analogous to $\alpha$ - a common measure of reliability, here, $\alpha_{rel}$) and AVE (calculates average variance extracted (Ave) - a common measure of validity, here, $Ave$).
+
+* R Core Team (2021). R: A language and environment for
+  statistical computing. R Foundation for Statistical
+  Computing, Vienna, Austria. URL https://www.R-project.org/.
+
+* Yves Rosseel (2012). lavaan: An R Package for Structural
+  Equation Modeling. Journal of Statistical Software, 48(2),
+  1-36. https://doi.org/10.18637/jss.v048.i02
+  
+* Jorgensen, T. D., Pornprasertmanit, S., Schoemann, A. M., &
+  Rosseel, Y. (2022). semTools: Useful tools for structural
+  equation modeling. R package version 0.5-6. Retrieved from
+  https://CRAN.R-project.org/package=semTools
+  
+* O'Connell NS, Dai L, Jiang Y, Speiser JL, Ward R, Wei W, Carroll R, Gebregziabher M. Methods for Analysis of Pre-Post Data in Clinical Research: A Comparison of Five Common Methods. J Biom Biostat. 2017 Feb 24;8(1):1-8. doi: 10.4172/2155-6180.1000334. PMID: 30555734; PMCID: PMC6290914.  
+  
+# Results
+
+
+## Reliability and Validity
+
+The summed QoL score showed good reliability ($\alpha_{rel}$ = 0.9), and validity ($Ave$ = 0.85). All three items loaded significantly onto the single latent variable (Standardized Coefficients >0.85, p < 0.0001). In addition, the average inter-item correlations based on Spearman rank correlations was 0.77, suggesting a moderate degree of overlap between individual items. Overall, these results suggest that combining the single QoL items into a single scale is appropriate.
+
+```{r}
+library(lavaan)
+
+model <- 
+  ' qol =~ Overall.Health_pre+QoL_pre+QoSL_pre
+
+  '
+fit <- cfa(model, data = dat, ordered = c("Overall.Health_pre", 
+                                          "QoL_pre", "QoSL_pre"))
+#summary(fit)
+standardizedsolution(fit, type = "std.all")[1:3,]
+```
+
+Reliability and Validity:
+
+```{r}
+
+paste("Reliability = ",semTools::compRelSEM(fit, ord.scale=TRUE, tau.eq = T) %>% round(2))
+
+paste("Validity = ", semTools::AVE(fit) %>% round(2))
+
+
+```
+### A Note Validity and reliability
+
+A reviewer has asked about scale validity. 
+
+Validity can be assessed after fitted a Confirmatory Factor Analysis (CFA) model on the items. Here, we fit a single-factor CFA. So, we can run a CFA model, and then calculate Ave Var, which is the average variance extracted from a construct, which tells us, on average, "how much variation in this item can be explained by the construct or latent variable?" Typically, values of Ave Var greater than 0.5 are considered acceptable. i.e., the average variance extracted has often been used to assess discriminant validity, with 0.5 as a cut-off. 
+
+Here, the value of avevar is high, suggesting reasonable validity of this scale. 
+
+Reference:
+
+* Fornell, C., & Larcker, D. F. (1981). Evaluating structural equation models with unobservable variables and measurement error. Journal of Marketing Research, 18, 39-50. 
+
+A common measure of realiability is Cronbach's alpha. This test is not very good at handling small numbers of item, and so it is often recommended to report inter-item correlations as well as alpha.
+
+Here are the Spearman correlations between the items:
+
+```{r}
+cor(dat[, c("Overall.Health_pre", "QoL_pre", "QoSL_pre")], 
+     method = "spearman") %>% round(2)
+
+
+cor(dat[, c("Overall.Health_post", "QoL_post", "QoSL_post")], 
+     method = "spearman") %>% round(2)
+
+
+```
+
+The average inter-item correlation is `(0.81+0.7+0.79)/3` = 0.77. This value is relatively high (ideally this should be ~0.5), suggesting high overlap between questions. 
+
+
+---
+
+
+## Analysis of pre-post scores
+
+The figure below shows how respondents scores changed before and after the event for the Overall health item. It is clear from the plot that, in general participant responses remained the same, or improved; there are relatively few lines showing a decrease on QoL after the event. 
+
+```{r}
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+
+pj <- position_jitter(width = 0, height = 0.1)
+
+dat %>% dplyr::select(Overall.Health_pre, Overall.Health_post, ID) %>%
+  
+  pivot_longer(cols = c(Overall.Health_pre, Overall.Health_post)) %>%
+  
+  mutate(name = factor(name, levels = c("Overall.Health_pre", 
+                                           "Overall.Health_post"), 
+                          ordered = TRUE)) %>%
+  
+  ggplot(data =., aes(x = name, y = value))+
+  #geom_point()+
+  geom_line(position = pj, aes(group =ID))+
+  theme_classic()+
+  ylab("Score")+
+  xlab("Survey")+
+  ggtitle("Plot of overall heath pre- vs post-participation")+
+  theme(axis.text = element_text(size = 12), 
+        axis.title = element_text(size = 14))
+
+
+```
+
+NOTE: lines are jittered to facilitate viewing. 
+
+
+```{r}
+dat$sum_pre <- dat$Overall.Health_pre+dat$QoL_pre+dat$QoSL_pre
+dat$sum_post <- dat$Overall.Health_post+dat$QoL_post+dat$QoSL_post
+
+```
+
+The boxplot below shows the pre- and post- QoL sum scores. Again we can see a slight increase in the median (line) and mean (red dot) values in the post-event group. 
+
+```{r}
+
+dat_means <- data.frame(name = c("Pre-event", "Post-event"),
+                      value = c(mean(dat$sum_pre),
+                                mean(dat$sum_post)))
+
+dat %>% dplyr::select(sum_pre, sum_post) %>% 
+  mutate("Pre-event"=sum_pre, "Post-event"=sum_post ) %>%
+  pivot_longer(cols = c("Pre-event", "Post-event")) -> aa
+aa$name <- factor(aa$name, levels = c("Pre-event", "Post-event"), 
+                        ordered = TRUE)
+ggplot(data =aa, aes(x = name, y = value))+
+  geom_boxplot(width =0.3)+
+  geom_jitter(width =0.1, alpha = 0.6)+
+  geom_point(data = dat_means, aes(x = name, y = value), 
+             color="red", size = 4, alpha  =1)+
+  theme_classic()+
+  xlab("")+
+  ylab("Sum Score")+
+  theme(axis.text = element_text(size= 14), 
+        axis.title = element_text(size = 16))+
+  geom_text(aes(x = 1.5, y = 16, label = "*"), size = 14)
+
+ggsave("boxplot.png", height = 5, width = 6, units = "in", 
+       dpi = 300)
+```
+
+### Individual Boxplots
+
+```{r}
+dat_means.oh <- data.frame(name = c("Pre-event", "Post-event"),
+                      value = c(mean(dat$Overall.Health_pre),
+                                mean(dat$Overall.Health_post)))
+
+
+dat %>% dplyr::select(Overall.Health_pre, Overall.Health_post) %>% 
+  mutate("Pre-event"=Overall.Health_pre, "Post-event"=Overall.Health_post ) %>%
+  pivot_longer(cols = c("Pre-event", "Post-event")) -> aa.oh
+aa.oh$name <- factor(aa.oh$name, levels = c("Pre-event", "Post-event"), 
+                        ordered = TRUE)
+
+oh.p <-
+ggplot(data =aa.oh, aes(x = name, y = value))+
+  geom_boxplot(width =0.3)+
+  geom_jitter(width =0.1, alpha = 0.6)+
+  geom_point(data = dat_means.oh, aes(x = name, y = value), 
+             color="red", size = 4, alpha  =1)+
+  theme_classic()+
+  xlab("")+
+  ylab("Overall Health")+
+  theme(axis.text = element_text(size= 14), 
+        axis.title = element_text(size = 16))+
+  scale_y_continuous(limits = c(1, 5.5), breaks = c(1:5))+
+  geom_text(aes(x = 1.5, y = 5, label = "*"), size = 14)
+
+# ggsave("boxplot_oh.png", height = 5, width = 6, units = "in", 
+#        dpi = 300)
+
+dat_means.qol <- data.frame(name = c("Pre-event", "Post-event"),
+                      value = c(mean(dat$QoL_pre),
+                                mean(dat$QoL_post)))
+
+dat %>% dplyr::select(QoL_pre, QoL_post) %>% 
+  mutate("Pre-event"=QoL_pre, "Post-event"=QoL_post ) %>%
+  pivot_longer(cols = c("Pre-event", "Post-event")) -> aa.qol
+aa.qol$name <- factor(aa.qol$name, levels = c("Pre-event", "Post-event"), 
+                        ordered = TRUE)
+
+qol.p <-
+ggplot(data =aa.qol, aes(x = name, y = value))+
+  geom_boxplot(width =0.3)+
+  geom_jitter(width =0.1, alpha = 0.6)+
+  geom_point(data = dat_means.qol, aes(x = name, y = value), 
+             color="red", size = 4, alpha  =1)+
+  scale_y_continuous(limits = c(1, 5.5), breaks = c(1:5))+
+  theme_classic()+
+  xlab("")+
+  ylab("Quality of Life")+
+  theme(axis.text = element_text(size= 14), 
+        axis.title = element_text(size = 16))+
+  geom_text(aes(x = 1.5, y = 5, label = "*"), size = 14)
+
+# ggsave("boxplot_qol.png", height = 5, width = 6, units = "in", 
+#        dpi = 300)
+
+dat_means.qosl <- data.frame(name = c("Pre-event", "Post-event"),
+                      value = c(mean(dat$QoSL_pre),
+                                mean(dat$QoSL_post)))
+
+dat %>% dplyr::select(QoSL_pre, QoSL_post) %>% 
+  mutate("Pre-event"=QoSL_pre, "Post-event"=QoSL_post ) %>%
+  pivot_longer(cols = c("Pre-event", "Post-event")) -> aa.qosl
+aa.qosl$name <- factor(aa.qosl$name, levels = c("Pre-event", "Post-event"), 
+                        ordered = TRUE)
+
+qosl.p <-
+ggplot(data =aa.qosl, aes(x = name, y = value))+
+  geom_boxplot(width =0.3)+
+  geom_jitter(width =0.1, alpha = 0.6)+
+  geom_point(data = dat_means.qosl, aes(x = name, y = value), 
+             color="red", size = 4, alpha  =1)+
+  theme_classic()+
+  xlab("")+
+  ylab("Quality of Social Life")+
+  scale_y_continuous(limits = c(1, 5.5), breaks = c(1:5))+
+  theme(axis.text = element_text(size= 14), 
+        axis.title = element_text(size = 16))+
+  geom_text(aes(x = 1.5, y = 5, label = "*"), size = 14)
+
+library(cowplot)
+plot_grid(oh.p +theme(axis.text.x = element_blank()), 
+          qol.p+theme(axis.text.x = element_blank()), 
+          qosl.p, ncol = 1)
+
+
+ggsave("boxplot_ind.png", height = 7, width = 4, units = "in",
+       dpi = 300)
+
+```
+
+
+### T-test for sum score
+
+Paired T-test results suggest that there is a significant difference in the average QoL sum score after the event (mean difference[95%CI] = 1.15[0.63, 1.67],$t_{51}$ = 4.5, p < 0.001).
+
+```{r}
+t.test(dat$sum_post, dat$sum_pre, paired=TRUE)
+
+```
+
+As a sensitivity, we can also use a wilcoxon signed rank test on the sum score, which was also significant (V = 48, p < 0.0001):
+
+```{r}
+
+sums <- wilcox.test(dat$sum_pre, dat$sum_post, paired = TRUE)
+sums
+paste("Z = " , qnorm(sums$p.value/2)%>% round(2))
+
+
+```
+
+### Wilcoxon signed rank tests for individual score
+
+Individual tests for each of the QoL questions were also significant (all p-values < 0.01).
+
+```{r}
+OH <-wilcox.test(dat$Overall.Health_post, dat$Overall.Health_pre, paired = TRUE)
+OH
+paste("Z = " , qnorm(OH$p.value/2)%>% round(2))
+
+
+QOL <- wilcox.test(dat$QoL_post,dat$QoL_pre, paired = TRUE)
+QOL
+paste("Z = " , qnorm(QOL$p.value/2)%>% round(2))
+
+
+QOSL <- wilcox.test(dat$QoSL_post,dat$QoSL_pre, paired = TRUE)
+QOSL
+paste("Z = " , qnorm(QOSL$p.value/2)%>% round(2))
+
+```
+
+Tables for the changes in individual scores pre- versus  post-participation could also be included, as they provide more information than the tests alone. 
+
+### Tables of score change
+
+I recommend including these as supplemental. 
+
+
+```{r}
+with(dat %>% filter(Diagnosis2=="Mental Health"), table(PRE=Overall.Health_pre, 
+      POST=Overall.Health_post))
+
+with(dat %>% filter(!Diagnosis2=="Mental Health"), table(PRE=Overall.Health_pre, 
+      POST=Overall.Health_post))
+
+
+
+dat %>% group_by(Diagnosis2) %>% summarize("Mean of difference" = mean(sum_post-sum_pre), 
+                                           "SD of difference" = sd(sum_post-sum_pre))
+
+
+dat %>% group_by(Diagnosis2) %>% summarize("Mean of difference" = mean(QoL_post-QoL_pre), 
+                                           "SD of difference" = sd(QoL_post-QoL_pre))
+
+dat %>% group_by(Diagnosis2) %>% summarize("Mean of difference" = mean(QoSL_post-QoSL_pre), 
+                                           "SD of difference" = sd(QoSL_post-QoSL_pre))
+
+dat %>% group_by(Diagnosis2) %>% 
+  summarize("Mean of difference" = mean(Overall.Health_post-Overall.Health_pre), 
+            "SD of difference" = sd(Overall.Health_post-Overall.Health_pre))
+
+
+with(dat, table(Overall.Health_post-Overall.Health_pre, Diagnosis2))
+
+
+sum(-1, rep(0, 12),rep(1, 7))/20
+
+```
+
+Overall Health
+
+```{r}
+table(PRE=dat$Overall.Health_pre, 
+      POST=dat$Overall.Health_post)
+# prop.table(table(PRE=dat$Overall.Health_pre, 
+#       POST=dat$Overall.Health_post))
+```
+
+Notice that most individuals stay the same (diagonals), or increase (above the diagonals). One individual went from a 5 to a 4. 
+
+QoL
+
+```{r}
+table(PRE=dat$QoL_pre, 
+      POST=dat$QoL_post)
+# prop.table(table(PRE=dat$QoL_pre, 
+#       POST=dat$QoL_post))
+```
+
+Notice that most individuals stay the same (diagonals), or increase (above the diagonals). One individual went from a 4 to a 3, and three individuals went from a 5 to a 4. 
+
+QoSL
+
+```{r}
+table(PRE=dat$QoSL_pre, 
+      POST=dat$QoSL_post)
+# prop.table(table(PRE=dat$QoSL_pre, 
+#       POST=dat$QoSL_post))
+
+
+```
+
+Notice that most individuals stay the same (diagonals), or increase (above the diagonals). One individual went from a 4 to a 3, and one individual went from a 5 to a 4. 
+
+---
+
+## Regression analysis
+
+### Sum score analysis
+
+The regression model fit the data well, and had normally distributed residuals. 
+
+The model explains a statistically significant and substantial proportion of variance ($R^2$ = 0.64, $F_{11,36}$ = 5.84, p < 0.001, $R^2_{adj}$ = 0.53). Pre-participation sum score was the only significant predictor of post-participation QoL sum score (p < 0.001). Pre-participation QoL score explained 30% of the variance in post-participation score. The only other variable that contributed substantially to the explained variance was Diagnosis, which explained an additiona 11%, but was not significant (p = 0.08).
+
+```{r}
+library(car)
+#names(dat)
+lm1 <-lm(sum_post~sum_pre + Diagnosis2+Era2+Age+Male.Female, 
+         data =dat)
+
+summary(lm1) 
+car::Anova(lm1)
+EtaSq(lm1)
+
+#unique(dat$Diagnosis2)
+library(emmeans)
+pairs(emmeans(lm3, ~Diagnosis2))
+
+
+```
+
+
+
+#### Sensitivity - models on individual items
+
+For overall health, we find a significant difference between males and females ($F_{1,36} = 6.37, p = 0.02), with males having, on average higher post-participation Overall Health scores, when adjusting for pre-participation score, age, diagnosis and era. Gender, however, only explains 5% of the variation in post-participation.
+
+```{r, eval = T}
+library(car)
+#names(dat)
+lm2 <-lm(Overall.Health_post~Overall.Health_pre + Diagnosis2+Era2+Age+Male.Female, 
+         data =dat)
+
+summary(lm2) 
+car::Anova(lm2, method = "Wald")
+EtaSq(lm2)
+#performance::check_model(lm2)
+```
+
+For QoL, there are no significant demographic variabes
+
+```{r}
+library(car)
+#names(dat)
+lm3 <-lm(QoL_post~QoL_pre + Era2+Age+Male.Female+Diagnosis2, 
+         data =dat)
+
+summary(lm3) 
+car::Anova(lm3, method = "Wald")
+EtaSq(lm3)
+#performance::check_model(lm3)
+```
+
+For QoSL, there are no significant demographic variables.
+
+```{r}
+library(car)
+#names(dat)
+lm4 <-lm(QoSL_post~QoSL_pre + Diagnosis2+Era2+Age+Male.Female, 
+         data =dat)
+
+summary(lm4) 
+car::Anova(lm4, method = "Wald")
+EtaSq(lm4)
+#performance::check_model(lm4)
+```
+
+---
+
+
+# Conclusions
+
+We find evidence of a significant increase in QoL, measured as a sum score and as individual items. This is borne out by the fact that there are very few instances in which participants transitioned to a lower post-participation score from their pre-participation score (tables of score change).
+
+In general, demographic variables were not good predictors of QoL scores. The only significant predictor of post-participation sum score was pre-participation score. One exception to this is Gender predicting Overall Health. In that model, Males had higher average scores, after adjusting for Age, Era, Diagnosis, and pre-participation score. 
+
+---
+
+# Outputs to include:
+
+## Main paper
+
+1. Alpha, AVE, average inter-item correlations from CFA
+2. Boxplot of Sum score QoL
+3. T-test results for sum score
+4. Wilcoxon results for individual scores
+5. Anova table for sum score model with $R^2$ and f-value reported in text
+
+## Supplement
+
+1. Table of correlations of items with latent variable from cfa
+2. Plot(s) of individual overall health responses -like the ones you have or like the one I include here
+3. Tables of score change for individual items 
+4. Anova table for individual items models 
+
+
+---
+
+```{r , eval = FALSE}
+report::report(lm1)
+
+library(ordinal)
+library(MASS)
+library(lmerTest)
+library(ordbetareg)
+
+bm0 <- ordbetareg(sum_post ~ sum_pre, data = na.omit(dat))
+bm1 <- ordbetareg(sum_post ~ sum_pre + Era2 + Age +
+                    Male.Female , 
+                  data = na.omit(dat))
+
+summary(bm0)
+summary(bm1)
+library(performance)
+conditional_effects(bm1, "Era2")
+
+compare_performance(bm0, bm1)
+
+pp_check(bm1, "hist")
+
+### QoL score analysis
+
+
+library(ordinal)
+library(MASS)
+library(lmerTest)
+library(ordbetareg)
+Overall.Health_post
+bm0.o <- ordbetareg(Overall.Health_post ~ Overall.Health_pre, data = na.omit(dat))
+bm1.o <- ordbetareg(Overall.Health_post ~ Overall.Health_pre + Era2 + Age + Male.Female , 
+                  data = na.omit(dat))
+
+summary(bm0.o)
+summary(bm1.o)
+library(performance)
+conditional_effects(bm1.o, "Era2")
+
+compare_performance(bm0.o, bm1.o)
+
+hist(dat$sum_post)
+
+bm0.qol <- ordbetareg(QoL_post ~ QoL_pre, data = na.omit(dat))
+bm1.qol <- ordbetareg(QoL_post ~ QoL_pre + Era2 + Age + Male.Female , 
+                  data = na.omit(dat))
+
+summary(bm0.qol)
+summary(bm1.qol)
+library(performance)
+conditional_effects(bm1.qol, "Era2")
+
+compare_performance(bm0.qol, bm1.qol)
+
+
+
+### QoSL score analysis
+
+
+
+bm0.qosl <- ordbetareg(QoSL_post ~ QoSL_pre, data = na.omit(dat))
+bm1.qosl <- ordbetareg(QoSL_post ~ QoSL_pre + Era2 + Age + Male.Female , 
+                  data = na.omit(dat))
+
+summary(bm0.qosl)
+summary(bm1.qosl)
+library(performance)
+conditional_effects(bm1.qosl, "Era2")
+
+compare_performance(bm0.qosl, bm1.qosl)
+
+
+```
+
+
+```{r,eval  = FALSE}
+
+sum_dif <- dat$sum_post-dat$sum_pre
+
+
+lm4 <-lm(sum_dif~Diagnosis2+Era2+Age+Male.Female, 
+         data =dat)
+summary(lm4)
+car::Anova(lm4)
+
+```
+
+
