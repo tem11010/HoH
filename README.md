@@ -1,6 +1,7 @@
 This repository contains data and code related to:
 
 "Acute influence of an adaptive sporting event on quality of life in veterans with disabilities"
+
 Alexis N. Sidiropoulos1, Jonathan J. Glasberg1, Timothy E. Moore, PhD2, Leif M. Nelson3, Jason T. Maikos1
 
 1Department of Veterans Affairs, New York Harbor Healthcare System, New York, New York, USA
