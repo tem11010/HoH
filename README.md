@@ -12,3 +12,9 @@ Alexis N. Sidiropoulos1, Jonathan J. Glasberg1, Timothy E. Moore2, Leif M. Nelso
 E-mail: alexis.sidiropoulos@va.gov (AS)
 
 
+ZENODO release is available here:
+[![DOI](https://zenodo.org/badge/545003153.svg)](https://zenodo.org/badge/latestdoi/545003153)
+
+
+
+
